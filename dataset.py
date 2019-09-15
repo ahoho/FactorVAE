@@ -4,9 +4,11 @@ import os
 import random
 import numpy as np
 
+from PIL import Image
+
 import torch
 from torch.utils.data import Dataset, DataLoader
-from torchvision.datasets import ImageFolder
+from torchvision.datasets import ImageFolder, MNIST
 from torchvision import transforms
 
 
@@ -53,6 +55,30 @@ class CustomTensorDataset(Dataset):
     def __len__(self):
         return self.data_tensor.size(0)
 
+class CustomMNISTDataset(MNIST):
+    def __init__(self, *args, **kwargs):
+        try:
+            super().__init__(*args, **kwargs)
+        except RuntimeError:
+            super().__init__(*args, **kwargs, download=True)
+        self.indices = range(len(self))
+        
+    def __getitem__(self, index1):
+        index2 = random.choice(self.indices)
+        if self.train:
+            img1, img2 = self.train_data[index1], self.train_data[index2]
+        else:
+            img1, img2 = self.test_data[index1], self.test_data[index2]
+        
+        # c.f. from original MNIST fn, made to be consistent with other datasets
+        img1 = Image.fromarray(img1.numpy(), mode='L')
+        img2 = Image.fromarray(img2.numpy(), mode='L')
+
+        if self.transform is not None:
+            img1, img2 = self.transform(img1), self.transform(img2)
+
+        return img1, img2
+
 
 def return_data(args):
     name = args.dataset
@@ -80,6 +106,11 @@ def return_data(args):
         data = torch.from_numpy(data['imgs']).unsqueeze(1).float()
         train_kwargs = {'data_tensor':data}
         dset = CustomTensorDataset
+    elif name.lower() == 'mnist':
+        root = os.path.join(dset_dir, 'mnist')
+        train_kwargs = {'root': root, 'transform': transform}
+        dset = CustomMNISTDataset        
+
     else:
         raise NotImplementedError
 
