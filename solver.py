@@ -28,10 +28,10 @@ class Solver(object):
 
         # Data
         self.dset_dir = args.dset_dir
-        self.dataset = args.dataset
         self.batch_size = args.batch_size
         self.data_loader = return_data(args)
-
+        self.dataset = args.dataset
+        
         # Networks & Optimizers
         self.z_dim = args.z_dim
         self.gamma = args.gamma
@@ -44,7 +44,7 @@ class Solver(object):
         self.beta1_D = args.beta1_D
         self.beta2_D = args.beta2_D
 
-        if args.dataset == 'dsprites':
+        if self.dataset in ('dsprites', 'mnist'):
             self.VAE = FactorVAE1(self.z_dim).to(self.device)
             self.nc = 1
         else:
@@ -249,6 +249,26 @@ class Solver(object):
 
             Z = {'fixed_square':fixed_img_z1, 'fixed_ellipse':fixed_img_z2,
                  'fixed_heart':fixed_img_z3, 'random_img':random_img_z}
+
+        if self.dataset.lower() == 'mnist':
+            fixed_idx1 = 1000 # zero 
+            fixed_idx2 = 7 # three
+            fixed_idx3 = 9000  # six
+            fixed_img1 = self.data_loader.dataset.__getitem__(fixed_idx1)[0]
+            fixed_img1 = fixed_img1.to(self.device).unsqueeze(0)
+            fixed_img_z1 = encoder(fixed_img1)[:, :self.z_dim]
+
+            fixed_img2 = self.data_loader.dataset.__getitem__(fixed_idx2)[0]
+            fixed_img2 = fixed_img2.to(self.device).unsqueeze(0)
+            fixed_img_z2 = encoder(fixed_img2)[:, :self.z_dim]
+
+            fixed_img3 = self.data_loader.dataset.__getitem__(fixed_idx3)[0]
+            fixed_img3 = fixed_img3.to(self.device).unsqueeze(0)
+            fixed_img_z3 = encoder(fixed_img3)[:, :self.z_dim]
+
+            Z = {'zero':fixed_img_z1, 'three':fixed_img_z2,
+                 'six':fixed_img_z3, 'random_img':random_img_z}
+
 
         elif self.dataset.lower() == 'celeba':
             fixed_idx1 = 191281 # 'CelebA/img_align_celeba/191282.jpg'

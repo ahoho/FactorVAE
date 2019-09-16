@@ -100,8 +100,11 @@ def return_data(args):
         root = os.path.join(dset_dir, '3DChairs')
         train_kwargs = {'root':root, 'transform':transform}
         dset = CustomImageFolder
-    elif name.lower() == 'dsprites':
-        root = os.path.join(dset_dir, 'dsprites-dataset/dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz')
+    elif 'dsprites' in name.lower():
+        if name.lower() == 'dsprites':
+            root = os.path.join(dset_dir, 'dsprites-dataset/dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz')
+        if name.lower() == 'dsprites-colored':
+            root = os.path.join(dset_dir, 'dsprites-dataset/dsprites_ndarray_colored.npz')
         data = np.load(root, encoding='latin1')
         data = torch.from_numpy(data['imgs']).unsqueeze(1).float()
         train_kwargs = {'data_tensor':data}
