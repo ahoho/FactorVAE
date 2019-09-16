@@ -250,7 +250,7 @@ class Solver(object):
             Z = {'fixed_square':fixed_img_z1, 'fixed_ellipse':fixed_img_z2,
                  'fixed_heart':fixed_img_z3, 'random_img':random_img_z}
 
-        if self.dataset.lower() == 'mnist':
+        if 'mnist' in self.dataset.lower():
             fixed_idx1 = 1000 # zero 
             fixed_idx2 = 7 # three
             fixed_idx3 = 9000  # six
